@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multiplayer Bingo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav>
+      <h1>Bingo the Game</h1>
+    </nav>
+    <section>
+      
+      <div id="landingPage" class="view">
+        <div class="menu-box">
+          <h1>Multiplayer Bingo</h1>
+          <input type="text" id="username" placeholder="Enter Your Name" />
+          <div class="btnPlay">
+            <button id="btnSingle">Play VS Computer</button>
+            <button id="btnMulti">Play with Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="roomPage" class="view hidden">
+        <div class="menu-box">
+          <h2>Multiplayer Lobby</h2>
+          <button id="btnCreate">Create New Room</button>
+          <p>- OR -</p>
+          <div class="join-section">
+            <input type="text" id="roomInput" placeholder="Enter Room ID" />
+            <button id="btnJoin">Join Room</button>
+          </div>
+          <button id="btnBack" style="background-color: grey">Back</button>
+        </div>
+      </div>
+
+      <div id="gameArea" class="view hidden">
+        
+        <div class="room-info">
+          <button id="btnGameBack">Exit</button>
+          <div class="info-text">
+              <span id="displayRoomID">Room: ---</span>
+              <span id="turnIndicator">Your Turn</span>
+              <span id="playerCount">Players: 1</span>
+          </div>
+        </div>
+
+        <div class="game">
+          <div class="gameContainer">
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext"></span></div>
+          </div>
+
+          <div class="gameInfo">
+            <h1>Welcome to Bingo</h1>
+            <div class="rules">
+              <h3>How to Play:</h3>
+              <ul>
+                <li><strong>Setup:</strong> Randomize or fill grid 1-25.</li>
+                <li><strong>Play:</strong> Click numbers to mark them.</li>
+                <li><strong>Win:</strong> Get 5 lines (BINGO)!</li>
+              </ul>
+            </div>
+            <div class="bingoTracker">
+              <span class="letter">B</span>
+              <span class="letter">I</span>
+              <span class="letter">N</span>
+              <span class="letter">G</span>
+              <span class="letter">O</span>
+            </div>
+            <div class="gameFunc">
+              <div class="enterNo">
+                <button id="random">Randomize</button>
+                <button id="manual">Manual/Enter</button>
+              </div>
+              <button id="reset">Reset</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="winModal" class="modal hidden">
+          <div class="modal-content">
+            <h2>🎉 BINGO! 🎉</h2>
+            <p>You mastered the grid!</p>
+            <button id="closeModal">Cool!</button>
+          </div>
+        </div>
+
+        <div id="lossModal" class="modal hidden">
+            <div class="modal-content" style="border-color: #ef4444;">
+              <h2 style="color: #ef4444;">😞 Game Over</h2>
+              <p id="winnerNameText">Opponent Won!</p>
+              <button id="closeLossModal" style="background-color: #ef4444;">Close</button>
+            </div>
+        </div>
+
+      </div>
+    </section>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
