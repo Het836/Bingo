@@ -132,7 +132,7 @@ socket.on('game_started', (data) => {
     playSound('start');
 
     // 3. Update the UI
-    alert("Everyone is Ready! Game Started!");
+    // alert("Everyone is Ready! Game Started!");
     manual.innerText = "Game On!";
     manual.style.backgroundColor = "var(--marked-color)";
 

@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
         if (!roomState) return;
         
         if(rooms[roomId].gameState != 'playing') return;
-        
+
         // Validation: Is it actually this person's turn?
         const currentPlayer = roomState.players[roomState.turnIndex];
         if (socket.id !== currentPlayer.id) {
@@ -99,10 +99,19 @@ io.on('connection', (socket) => {
         // Debug Log: Check if server hears the click
         console.log(`Reset requested for room: ${roomId}`);
 
-        if (rooms[roomId]) {
+        const roomState = rooms[roomId];
+
+        if (roomState) {
+            // 1. Reset Game State to WAITING (Critical!)
+            roomState.gameState = 'waiting';
             rooms[roomId].turnIndex = 0;
+
+            // 2. Mark all player as Not ready
+            roomState.players.forEach(p => p.isReady = false);
+
             const firstPlayer = rooms[roomId].players[0].username;
 
+            // 3. tell client to reset 
             io.to(roomId).emit('game_reset', { startTurn: firstPlayer });
         } else {
             // NEW: Tell client the room is dead
