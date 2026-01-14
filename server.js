@@ -61,12 +61,13 @@ io.on('connection', (socket) => {
 
     // 3. Handle Turns & Clicking
     socket.on('click_number', (data) => {
-        if(rooms[roomId].gameState != 'playing') return;
         const { roomId, number } = data;
         const roomState = rooms[roomId];
-
+        
         if (!roomState) return;
-
+        
+        if(rooms[roomId].gameState != 'playing') return;
+        
         // Validation: Is it actually this person's turn?
         const currentPlayer = roomState.players[roomState.turnIndex];
         if (socket.id !== currentPlayer.id) {
