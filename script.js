@@ -19,6 +19,13 @@ const btns = {
     back: document.getElementById('btnBack'),
     gameBack: document.getElementById('btnGameBack')
 };
+const sounds = {
+    start: new Audio('sounds/game-start.wav'),
+    click: new Audio('sounds/game-click.mp3'),
+    win: new Audio('sounds/small-win.wav'),
+    bingo: new Audio('sounds/big-win.wav'),
+    buzz: new Audio('sounds/buzz.mp3')
+}
 
 // Game Elements
 let boxtexts = document.querySelectorAll('.boxtext'); // The Numbers (Spans)
@@ -48,6 +55,7 @@ let isMyTurn = true;
 let myUsername = ""; 
 let gameEnded = false; // NEW: Prevents multiple alerts
 let currentRoomId = null;
+let previousLineCount = 0;
 
 const winPatterns = [
     [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], 
@@ -82,6 +90,7 @@ socket.on('number_marked', (data) => {
         }
     });
 
+    playSound('click');
     checkWin(); // Check if *I* won due to this move (rare, but possible)
     updateTurnUI(nextTurnUser);
 });
@@ -130,6 +139,8 @@ function setupGame(roomId) {
     showView('game');
     isMultiplayer = true;
     gameEnded = false;
+
+    playSound('start');
 }
 
 function updateTurnUI(username) {
@@ -141,6 +152,21 @@ function updateTurnUI(username) {
         isMyTurn = false;
         turnIndicator.innerText = `${username}'s Turn`;
         turnIndicator.style.backgroundColor = "#fbbf24"; // Yellow
+    }
+}
+
+function playSound(type) {
+    // 1. Check if the sound exists (safety first!)
+    if (sounds[type]) {
+        
+        // 2. Rewind sound to start (allows rapid re-playing)
+        sounds[type].currentTime = 0;
+        
+        // 3. Play (lowercase 'p')
+        sounds[type].play().catch(error => {
+            // This prevents errors if the browser blocks auto-play
+            console.log("Audio play failed:", error);
+        });
     }
 }
 
@@ -167,6 +193,7 @@ btns.single.addEventListener('click', () => {
     isMultiplayer = false;
     isMyTurn = true;
     turnIndicator.innerText = "Your Turn";
+    playSound('start');
 });
 
 btns.multi.addEventListener('click', () => {
@@ -191,12 +218,30 @@ function checkWin() {
     let lineCompleted = 0;
     for (let pattern of winPatterns) {
         const isWon = pattern.every(index => boxes[index].classList.contains('marked'));
-        if (isWon) lineCompleted++;
+        if (isWon){
+            lineCompleted++;
+        } 
+            
     }
 
     letters.forEach((letter, index) => {
-        index < lineCompleted ? letter.classList.add('active') : letter.classList.remove('active');
+        if(index < lineCompleted){
+            letter.classList.add('active');
+            // playSound('win');
+        }
+        else{
+            letter.classList.remove('active');
+        }
+        // index < lineCompleted ? letter.classList.add('active'), : letter.classList.remove('active');
     });
+
+    // 3. SOUND LOGIC 🎧
+    // If we have more lines now than before, and it's not yet Bingo...
+    if (lineCompleted > previousLineCount && lineCompleted < 5) {
+        playSound('win'); // Play "Small Win" (Ding!)
+    }
+    // Update history for next click
+    previousLineCount = lineCompleted;
 
     if (lineCompleted === 5) {
         gameEnded = true;
@@ -204,6 +249,7 @@ function checkWin() {
         
         triggerConfetti();
         winModal.classList.remove('hidden');
+        playSound('bingo');
 
         if (isMultiplayer) {
             const roomId = displayRoomID.innerText.replace('Room: ', '');
@@ -218,13 +264,19 @@ boxes.forEach(box => {
         if (!isLocked || gameEnded) return;
         if (box.classList.contains('marked')) return;
 
+       
         if (isMultiplayer) {
-            if (!isMyTurn) return alert("Wait for your turn!");
-            const roomId = displayRoomID.innerText.replace('Room: ', '');
+            if (!isMyTurn){
+                playSound('buzz');
+                return alert("Wait for your turn!");
+            }
+            // const roomId = displayRoomID.innerText.replace('Room: ', '');
             socket.emit('click_number', { roomId: currentRoomId, number: box.innerText });
         } else {
+            playSound('click');
             box.classList.add('marked');
             checkWin();
+
         }
     });
 });
@@ -234,6 +286,7 @@ boxes.forEach(box => {
 function performSoftReset() {
     isLocked = false;
     gameEnded = false;
+    previousLineCount = 0;
     
     // FIX: Clear the SPAN text, not the DIV text
     boxtexts.forEach(span => {
