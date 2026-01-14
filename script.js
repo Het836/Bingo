@@ -56,6 +56,8 @@ let myUsername = "";
 let gameEnded = false; // NEW: Prevents multiple alerts
 let currentRoomId = null;
 let previousLineCount = 0;
+let isGameActive = false;
+
 
 const winPatterns = [
     [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], 
@@ -120,6 +122,24 @@ socket.on('game_reset', (data) => {
 
 socket.on('error_message', (msg) => alert(msg));
 
+socket.on('game_started', (data) => {
+    const {startTurn} = data;
+
+    // 1. Unlock the gameplay flag
+    isGameActive = true;
+
+    // 2. Play sound
+    playSound('start');
+
+    // 3. Update the UI
+    alert("Everyone is Ready! Game Started!");
+    manual.innerText = "Game On!";
+    manual.style.backgroundColor = "var(--marked-color)";
+
+    // 4. Sync the turn indicator
+    updateTurnUI(startTurn);
+})
+
 
 // --- 4. NAVIGATION & LOGIC ---
 
@@ -140,7 +160,7 @@ function setupGame(roomId) {
     isMultiplayer = true;
     gameEnded = false;
 
-    playSound('start');
+    // playSound('start');
 }
 
 function updateTurnUI(username) {
@@ -264,6 +284,7 @@ boxes.forEach(box => {
         if (!isLocked || gameEnded) return;
         if (box.classList.contains('marked')) return;
 
+        if (!isGameActive) return alert("Wait for others...");
        
         if (isMultiplayer) {
             if (!isMyTurn){
@@ -336,10 +357,26 @@ random.addEventListener('click', () => {
 });
 
 manual.addEventListener('click', () => {
+    // 1. Check validation (boxes must be full)
     if (boxtexts[0].innerText === "") return alert("Fill boxes first!");
+
+    // 2. Lock the board immediately (so they can't change numbers while waiting)
     isLocked = true;
-    manual.innerText = "Game Started!";
-    manual.style.backgroundColor = "var(--marked-color)";
+
+    if(isMultiplayer){
+        // 3. Visual Feedback: Tell user we are waiting
+        manual.innerText = "Getting Start...";
+        manual.style.backgroundColor = "grey";
+
+        // 4. Send signal to server
+        socket.emit('player_ready', currentRoomId);
+    }
+    else{
+        // Single Player Logic (Instant Start)
+        manual.innerText = "Game Started!";
+        manual.style.backgroundColor = "var(--marked-color)";
+        isGameActive = true; // Unlock clicking immediately for single player
+    }
 });
 
 function showView(viewName) {
