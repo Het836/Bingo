@@ -1,0 +1,16 @@
+{
+  "name": "Bingo Multiplayer",
+  "short_name": "Bingo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multiplayer Bingo</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <link rel="apple-touch-icon" href="/logo.png" />
   </head>
   <body>
     <nav>
       <h1>Bingo the Game</h1>
     </nav>
     <section>
-      
       <div id="landingPage" class="view">
         <div class="menu-box">
           <h1>Multiplayer Bingo</h1>
@@ -37,13 +39,12 @@
       </div>
 
       <div id="gameArea" class="view hidden">
-        
         <div class="room-info">
           <button id="btnGameBack">Exit</button>
           <div class="info-text">
-              <span id="displayRoomID">Room: ---</span>
-              <span id="turnIndicator">Your Turn</span>
-              <span id="playerCount">Players: 1</span>
+            <span id="displayRoomID">Room: ---</span>
+            <span id="turnIndicator">Your Turn</span>
+            <span id="playerCount">Players: 1</span>
           </div>
         </div>
 
@@ -102,7 +103,7 @@
             </div>
           </div>
         </div>
-        
+
         <div id="winModal" class="modal hidden">
           <div class="modal-content">
             <h2>🎉 BINGO! 🎉</h2>
@@ -112,16 +113,17 @@
         </div>
 
         <div id="lossModal" class="modal hidden">
-            <div class="modal-content" style="border-color: #ef4444;">
-              <h2 style="color: #ef4444;">😞 Game Over</h2>
-              <p id="winnerNameText">Opponent Won!</p>
-              <button id="closeLossModal" style="background-color: #ef4444;">Close</button>
-            </div>
+          <div class="modal-content" style="border-color: #ef4444">
+            <h2 style="color: #ef4444">😞 Game Over</h2>
+            <p id="winnerNameText">Opponent Won!</p>
+            <button id="closeLossModal" style="background-color: #ef4444">
+              Close
+            </button>
+          </div>
         </div>
-
       </div>
     </section>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>

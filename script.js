@@ -324,7 +324,7 @@ function performSoftReset() {
     winModal.classList.add('hidden');
     lossModal.classList.add('hidden');
     
-    manual.innerText = "Manual/Enter";
+    manual.innerText = "Enter";
     manual.style.backgroundColor = "var(--primary-blue)";
     
     // Re-initialize array for randomizer
@@ -399,3 +399,11 @@ window.addEventListener('beforeunload', (e) => {
         e.returnValue = ''; // Shows standard browser warning
     }
 });
+
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch((err) => console.log('Service Worker Failed', err));
+}
