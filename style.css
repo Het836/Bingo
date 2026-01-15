@@ -10,7 +10,23 @@
     --loss-red: #ef4444;
 }
 
-* { padding: 0; margin: 0; box-sizing: border-box; }
+* { 
+    padding: 0; margin: 0; box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; /* remove the defualt blue highlight on ios*/
+}
+body{
+    /* prevent selection on whole page */
+    user-select: none;
+
+    /* Optional: Prevent rubber-band scrolling on iOS */
+    overscroll-behavior-y: none;
+}
+/* removing from input  */
+input,textarea{
+    user-select: text;
+    /* Ensure inputs are still clickable/focusable */
+    pointer-events: auto;
+}
 
 nav {
     background-color: var(--primary-blue);
@@ -22,6 +38,11 @@ nav {
 }
 
 section { background-color: var(--bg-color); min-height: 100vh; }
+
+/* applying touch-action to all btn  */
+button {
+    touch-action: manipulation;
+}
 
 /* View Management */
 .view {
@@ -139,8 +160,16 @@ section { background-color: var(--bg-color); min-height: 100vh; }
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    touch-action: manipulation; /* prevent zoom while double click*/
+    /* -webkit-user-select: none; */
+    user-select: none;
 }
-.box:hover { background-color: var(--light-blue); }
+/* only hover if mouse is used   */
+@media (hover: hover){
+    .box:hover { 
+        background-color: var(--light-blue); 
+    }
+}
 .boxtext { font-size: 4.8vw; }
 
 .marked {
