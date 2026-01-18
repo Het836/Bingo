@@ -1,3 +1,4 @@
+/* --- Variables --- */
 :root {
   --primary-blue: #0ea5e9;
   --dark-blue: #0369a1;
@@ -10,165 +11,99 @@
   --loss-red: #ef4444;
 }
 
+/* --- Base Reset & Global --- */
 * {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
+  padding: 0; margin: 0; box-sizing: border-box;
   -webkit-tap-highlight-color: transparent; /* iOS blue flash fix */
 }
 
-/* App-like behavior (No text selection) */
 body {
-  user-select: none;
+  user-select: none; /* App-like behavior */
   overscroll-behavior-y: none;
 }
 
-/* Re-enable selection for typing */
-input,
-textarea {
-  user-select: text;
+input, textarea {
+  user-select: all;
   pointer-events: auto;
 }
 
-/* Fast clicks on mobile */
-button {
-  touch-action: manipulation;
-}
+button { touch-action: manipulation; }
 
 nav {
   background-color: var(--primary-blue);
   height: 60px;
-  display: flex;
-  align-items: center;
-  padding: 15px;
+  display: flex; align-items: center; padding: 15px;
   color: white;
 }
 
-section {
-  background-color: var(--bg-color);
-  min-height: 100vh;
-}
+section { background-color: var(--bg-color); min-height: 100vh; }
 
 .view {
-  width: 100%;
-  min-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  width: 100%; min-height: 80vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
 }
 
-.hidden {
-  display: none !important;
-}
+.hidden { display: none !important; }
 
-/* Menus */
+/* --- Menus & Inputs --- */
 .menu-box {
   background-color: var(--card-bg);
-  padding: 40px;
-  border-radius: 20px;
+  padding: 40px; border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 90%;
-  max-width: 400px;
+  display: flex; flex-direction: column; gap: 15px;
+  width: 90%; max-width: 400px;
 }
 
 .menu-box input {
-  padding: 12px;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
+  padding: 12px; border: 2px solid var(--border-color);
+  border-radius: 8px; font-size: 1rem; outline: none;
 }
-.menu-box input:focus {
-  border-color: var(--primary-blue);
-}
+.menu-box input:focus { border-color: var(--primary-blue); }
 
-.btnPlay {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+.btnPlay { display: flex; flex-direction: column; gap: 15px; }
 
 .menu-box button {
-  padding: 12px;
-  background-color: var(--primary-blue);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  padding: 12px; background-color: var(--primary-blue);
+  border: none; border-radius: 8px; color: white;
+  font-size: 1.1rem; cursor: pointer; transition: background 0.2s;
 }
-.menu-box button:hover {
-  background-color: var(--dark-blue);
-}
+.menu-box button:hover { background-color: var(--dark-blue); }
 
-/* Room Info */
+/* --- Game Header / Room Info --- */
 .room-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  width: 90%;
-  max-width: 700px;
-  margin: 20px 0 10px 0;
-  padding: 15px;
-  background-color: var(--dark-blue);
-  color: white;
-  border-radius: 8px;
-  font-weight: bold;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 15px; width: 90%; max-width: 700px;
+  margin: 20px 0 10px 0; padding: 15px;
+  background-color: var(--dark-blue); color: white;
+  border-radius: 8px; font-weight: bold;
 }
 
-.room-func{
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  justify-content: space-around;
+.room-func, .info-text {
+  display: flex; gap: 20px; align-items: center; justify-content: space-around;
 }
 
-.info-text {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-  justify-content: space-around;
-}
+.info-text { gap: 30px; }
 
 #turnIndicator {
-  background: white;
-  color: var(--dark-blue);
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  text-transform: uppercase;
+  background: white; color: var(--dark-blue);
+  padding: 4px 10px; border-radius: 5px;
+  font-size: 0.9rem; text-transform: uppercase;
   transition: background-color 0.3s ease;
 }
 
 #btnGameBack {
-  padding: 8px 16px;
-  background: var(--loss-red);
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
+  padding: 8px 16px; background: var(--loss-red);
+  border: none; color: white; border-radius: 6px;
+  cursor: pointer; font-weight: bold;
 }
-#btnGameBack:hover {
-  background: #dc2626;
-}
+#btnGameBack:hover { background: #dc2626; }
 
-/* Game Grid */
+/* --- Game Grid --- */
 .game {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin: 20px 0;
-  padding: 10px;
-  gap: 30px;
-  color: var(--text-main);
+  display: flex; justify-content: center; flex-wrap: wrap;
+  margin: 20px 0; padding: 10px; gap: 30px; color: var(--text-main);
 }
 
 .gameContainer {
@@ -180,57 +115,37 @@ section {
 
 .box {
   border: 1.5px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  touch-action: manipulation;
-  user-select: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; touch-action: manipulation; user-select: none;
 }
 
-/* Only hover if device has a mouse */
 @media (hover: hover) {
-  .box:hover {
-    background-color: var(--light-blue);
-  }
+  .box:hover { background-color: var(--light-blue); }
 }
 
-.boxtext {
-  font-size: 4.8vw;
-}
+.boxtext { font-size: 4.8vw; }
 
 .marked {
   background-color: var(--marked-color) !important;
-  color: white;
-  border-color: var(--marked-color);
+  color: white; border-color: var(--marked-color);
 }
 
-/* Side Info */
+/* --- Game Controls & Tracker --- */
 .gameInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  background-color: var(--card-bg);
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex; flex-direction: column; gap: 0.7rem;
+  background-color: var(--card-bg); padding: 20px;
+  border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .bingoTracker {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: var(--light-blue);
-  border-radius: 10px;
+  display: flex; justify-content: space-between;
+  margin-bottom: 20px; padding: 10px;
+  background-color: var(--light-blue); border-radius: 10px;
 }
 
 .letter {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--border-color);
-  transition: all 0.3s;
-  display: inline-block;
+  font-size: 2rem; font-weight: 800; color: var(--border-color);
+  transition: all 0.3s; display: inline-block;
 }
 .letter.active {
   color: var(--primary-blue);
@@ -239,92 +154,48 @@ section {
 }
 
 .gameFunc button {
-  padding: 0.5rem;
-  background-color: var(--primary-blue);
-  border-radius: 10px;
-  color: white;
-  border: none;
-  cursor: pointer;
+  padding: 0.5rem; background-color: var(--primary-blue);
+  border-radius: 10px; color: white; border: none; cursor: pointer;
 }
 
-.enterNo {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.7rem;
-}
+.enterNo { display: flex; gap: 1rem; margin-bottom: 0.7rem; }
 
-/* Modal */
+/* --- Modals --- */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; justify-content: center; align-items: center;
   z-index: 100;
 }
 
 .modal-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 15px;
-  text-align: center;
-  border: 3px solid var(--primary-blue);
-  animation: popIn 0.1s ease;
-  min-width: 300px;
+  background-color: white; padding: 30px; border-radius: 15px;
+  text-align: center; border: 3px solid var(--primary-blue);
+  animation: popIn 0.1s ease; min-width: 300px;
 }
 
 .modal-content button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: var(--primary-blue);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
+  margin-top: 15px; padding: 10px 20px;
+  background-color: var(--primary-blue); color: white;
+  border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem;
 }
 
-#tieModal {
-  z-index: 200; /* Higher than others just in case */
-}
-
-#noneModel {
-  pointer-events: none;
-  cursor: default;
-}
+#tieModal { z-index: 200; }
+#noneModel { pointer-events: none; cursor: default; }
 
 @keyframes popIn {
-  0% {
-    transform: scale(0.8);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(0.8); }
+  100% { transform: scale(1); }
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
-  .game {
-    flex-direction: column;
-    align-items: center;
-  }
+  .game { flex-direction: column; align-items: center; }
   .gameContainer {
     grid-template-columns: repeat(5, 13vw);
     grid-template-rows: repeat(5, 13vw);
   }
-  .boxtext {
-    font-size: 8vw;
-  }
-  .gameInfo {
-    width: 100%;
-    max-width: 90vw;
-  }
-  .room-info {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
+  .boxtext { font-size: 8vw; }
+  .gameInfo { width: 100%; max-width: 90vw; }
+  .room-info { flex-direction: column; gap: 10px; text-align: center; }
 }

@@ -8,7 +8,7 @@ if ('serviceWorker' in navigator) {
     .catch((err) => console.log('SW Failed', err));
 }
 
-// --- Elements ---
+// --- DOM Elements ---
 const views = {
   landing: document.getElementById('landingPage'),
   room: document.getElementById('roomPage'),
@@ -34,6 +34,7 @@ const sounds = {
   buzz: new Audio('sounds/buzz.mp3')
 };
 
+// --- Game UI Elements ---
 let boxtexts = document.querySelectorAll('.boxtext');
 let boxes = document.querySelectorAll('.box');
 let letters = document.querySelectorAll('.letter');
@@ -45,6 +46,7 @@ let displayRoomID = document.getElementById('displayRoomID');
 let playerCountSpan = document.getElementById('playerCount');
 let turnIndicator = document.getElementById('turnIndicator');
 
+// --- Modals ---
 let winModal = document.getElementById('winModal');
 let closeModal = document.getElementById('closeModal');
 let lossModal = document.getElementById('lossModal');
@@ -55,7 +57,7 @@ let tieNameText = document.getElementById('tieNameText');
 let closeTieModal = document.getElementById('closeTieModal');
 let noneModal = document.getElementById('noneModal');
 
-// --- State ---
+// --- Game State ---
 let arr = Array.from({ length: 25 }, (_, i) => i + 1);
 let isLocked = false;
 let isMultiplayer = false;
@@ -72,12 +74,33 @@ const winPatterns = [
   [0, 6, 12, 18, 24], [4, 8, 12, 16, 20]
 ];
 
-// --- Socket Listeners ---
+// ============================================
+//              SOCKET LISTENERS
+// ============================================
+
+// Room Management
 socket.on('room_created', (roomId) => setupGame(roomId));
 socket.on('update_players', (players) => playerCountSpan.innerText = `Players: ${players.length}`);
 socket.on('update_turn', (username) => updateTurnUI(username));
-socket.on('error_message', (msg) => alert(msg));
 
+socket.on('player_joined', (data) => console.log(`${data.username} joined!`));
+
+socket.on('player_left', (data) => {
+    // Only show alert if the person leaving is NOT the current user
+    if(data.username !== myUsername) {
+        alert(`${data.username} left the game!`);
+    }
+    playerCountSpan.innerText = `Players: ${data.players.length}`;
+});
+
+// Error Handling (Game Started / Room Not Found)
+socket.on('error_message', (msg) => {
+    alert(msg);
+    showView('landing'); 
+    currentRoomId = null; 
+});
+
+// Game Logic
 socket.on('number_marked', ({ number, nextTurnUser }) => {
   boxes.forEach(box => {
     if (box.innerText.trim() == number) box.classList.add('marked');
@@ -85,43 +108,6 @@ socket.on('number_marked', ({ number, nextTurnUser }) => {
   playSound('click');
   checkWin();
   updateTurnUI(nextTurnUser);
-});
-
-socket.on('game_over', ({ winnerList }) => {
-  gameEnded = true;
-  isLocked = false;
-
-    console.log("winnerList:",winnerList);
-  //FORCE HIDE ALL MODALS FIRST (Fixes overlapping issues)
-  winModal.classList.add('hidden');
-  lossModal.classList.add('hidden');
-  tieModel.classList.add('hidden');
-  noneModal.classList.add('hidden');
-  
-  if(winnerList.length > 1){
-    if(winnerList.includes(myUsername)){
-        // show tie model
-        const remainingNames = winnerList.filter(name => name !== myUsername);
-        tieNameText.innerText = "You tied with " + remainingNames.join(",'");
-        tieModel.classList.remove('hidden');
-        triggerConfetti();
-        playSound('bingo');
-    }
-    else{
-        winnerNameText.innerText = `${winnerList.join(" & ")} Won!`;
-        lossModal.classList.remove('hidden');
-    }
-  }
-  else{
-      if (winnerList.includes(myUsername)) {
-        winModal.classList.remove('hidden');
-        triggerConfetti();
-        playSound('bingo');
-      } else {
-        winnerNameText.innerText = `${winnerList[0]} Won!`;
-        lossModal.classList.remove('hidden');
-      }
-  }
 });
 
 socket.on('game_reset', ({ startTurn }) => {
@@ -138,12 +124,51 @@ socket.on('game_started', ({ startTurn }) => {
   updateTurnUI(startTurn);
 });
 
-// --- Logic ---
+// Game Over / Win State
+socket.on('game_over', ({ winnerList }) => {
+  gameEnded = true;
+  isLocked = false;
+
+  // Force hide all existing modals
+  winModal.classList.add('hidden');
+  lossModal.classList.add('hidden');
+  tieModel.classList.add('hidden');
+  noneModal.classList.add('hidden');
+  
+  if(winnerList.length > 1){
+    // TIE GAME
+    if(winnerList.includes(myUsername)){
+        const remainingNames = winnerList.filter(name => name !== myUsername);
+        tieNameText.innerText = "You tied with " + remainingNames.join(", ");
+        tieModel.classList.remove('hidden');
+        triggerConfetti();
+        playSound('bingo');
+    } else {
+        winnerNameText.innerText = `${winnerList.join(" & ")} Won!`;
+        lossModal.classList.remove('hidden');
+    }
+  } else {
+      // SINGLE WINNER
+      if (winnerList.includes(myUsername)) {
+        winModal.classList.remove('hidden');
+        triggerConfetti();
+        playSound('bingo');
+      } else {
+        winnerNameText.innerText = `${winnerList[0]} Won!`;
+        lossModal.classList.remove('hidden');
+      }
+  }
+});
+
+// ============================================
+//              CORE LOGIC
+// ============================================
+
 function setupGame(roomId) {
   currentRoomId = roomId;
   displayRoomID.innerText = `Room: ${roomId}`;
-  displayRoomID.style.cursor = "pointer";
   displayRoomID.title = "Click to copy";
+  displayRoomID.style.cursor = "pointer";
   displayRoomID.onclick = () => {
     navigator.clipboard.writeText(roomId).then(() => alert("Copied!"));
   };
@@ -171,7 +196,75 @@ function playSound(type) {
   }
 }
 
-// --- Event Listeners ---
+function checkWin() {
+  if (gameEnded) return;
+  let lineCompleted = 0;
+  
+  winPatterns.forEach(pattern => {
+    if (pattern.every(idx => boxes[idx].classList.contains('marked'))) lineCompleted++;
+  });
+
+  letters.forEach((letter, index) => {
+    if (index < lineCompleted) letter.classList.add('active');
+    else letter.classList.remove('active');
+  });
+
+  if (lineCompleted > previousLineCount && lineCompleted < 5) playSound('win');
+  previousLineCount = lineCompleted;
+
+  if (lineCompleted === 5) {
+    gameEnded = true;
+    isLocked = false;
+    noneModal.classList.remove('hidden');
+    
+    if (isMultiplayer){
+      socket.emit('bingo_win', { roomId: currentRoomId, username: myUsername });
+    } else {
+      // Single Player Immediate Win
+      noneModal.classList.add('hidden');
+      winModal.classList.remove('hidden');
+      triggerConfetti();
+      playSound('bingo');
+    }
+  }
+}
+
+function performSoftReset() {
+  isLocked = false; 
+  gameEnded = false; 
+  previousLineCount = 0;
+  
+  boxtexts.forEach(span => span.innerText = '');
+  boxes.forEach(box => { 
+      box.style.backgroundColor = ''; 
+      box.classList.remove('marked'); 
+  });
+  letters.forEach(l => l.classList.remove('active'));
+  
+  winModal.classList.add('hidden');
+  lossModal.classList.add('hidden');
+  tieModel.classList.add('hidden');
+  noneModal.classList.add('hidden');
+
+  manual.innerText = "Enter";
+  manual.style.backgroundColor = "var(--primary-blue)";
+  arr = Array.from({ length: 25 }, (_, i) => i + 1);
+}
+
+function showView(viewName) {
+  Object.values(views).forEach(v => v.classList.add('hidden'));
+  views[viewName].classList.remove('hidden');
+}
+
+function triggerConfetti() {
+  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#f59e0b', '#ffffff'] });
+}
+
+// ============================================
+//              EVENT LISTENERS
+// ============================================
+
+// Navigation
 btns.create.addEventListener('click', () => {
   myUsername = inputs.username.value;
   if (!myUsername) return alert("Enter Name");
@@ -205,45 +298,20 @@ btns.multi.addEventListener('click', () => {
 
 if (btns.back) btns.back.addEventListener('click', () => showView('landing'));
 
+// Exit Game (with logic to update server)
 btns.gameBack.addEventListener('click', () => {
-  if (isLocked && !confirm("Leave game?")) return;
-  performSoftReset();
+  if (isMultiplayer) {
+      if (!confirm("Are you sure you want to leave the room?")) return;
+      socket.emit('leave_room'); 
+      currentRoomId = null;
+  } else if (isLocked && !confirm("Leave game?")) {
+      return;
+  }
+  performSoftReset(); 
   showView('landing');
 });
 
-// --- Gameplay ---
-function checkWin() {
-  if (gameEnded) return;
-  let lineCompleted = 0;
-  
-  winPatterns.forEach(pattern => {
-    if (pattern.every(idx => boxes[idx].classList.contains('marked'))) lineCompleted++;
-  });
-
-  letters.forEach((letter, index) => {
-    if (index < lineCompleted) letter.classList.add('active');
-    else letter.classList.remove('active');
-  });
-
-  if (lineCompleted > previousLineCount && lineCompleted < 5) playSound('win');
-  previousLineCount = lineCompleted;
-
-  if (lineCompleted === 5) {
-    gameEnded = true;
-    isLocked = false;
-    noneModal.classList.remove('hidden');
-    if (isMultiplayer){
-      socket.emit('bingo_win', { roomId: currentRoomId, username: myUsername });
-    } 
-    else{
-      noneModal.classList.add('hidden');
-      winModal.classList.remove('hidden');
-      triggerConfetti();
-      playSound('bingo');
-    }
-  }
-}
-
+// Game Board Interactions
 boxes.forEach(box => {
   box.addEventListener('click', () => {
     if (!isLocked || gameEnded || box.classList.contains('marked')) return;
@@ -260,18 +328,7 @@ boxes.forEach(box => {
   });
 });
 
-function performSoftReset() {
-  isLocked = false; gameEnded = false; previousLineCount = 0;
-  boxtexts.forEach(span => span.innerText = '');
-  boxes.forEach(box => { box.style.backgroundColor = ''; box.classList.remove('marked'); });
-  letters.forEach(l => l.classList.remove('active'));
-  winModal.classList.add('hidden');
-  lossModal.classList.add('hidden');
-  manual.innerText = "Enter";
-  manual.style.backgroundColor = "var(--primary-blue)";
-  arr = Array.from({ length: 25 }, (_, i) => i + 1);
-}
-
+// Control Buttons
 reset.addEventListener('click', () => {
   if (isMultiplayer) {
     if (confirm("Reset game for ALL players?")) socket.emit('reset_game', currentRoomId);
@@ -305,19 +362,14 @@ manual.addEventListener('click', () => {
   }
 });
 
-function showView(viewName) {
-  Object.values(views).forEach(v => v.classList.add('hidden'));
-  views[viewName].classList.remove('hidden');
-}
-
-function triggerConfetti() {
-  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#f59e0b', '#ffffff'] });
-}
-
+// Modals
 closeModal.addEventListener('click', () => winModal.classList.add('hidden'));
 closeLossModal.addEventListener('click', () => lossModal.classList.add('hidden'));
 closeTieModal.addEventListener('click',() => tieModel.classList.add('hidden'));
 
-window.addEventListener('beforeunload', (e) => {
-  if (isMultiplayer && !gameEnded) { e.preventDefault(); e.returnValue = ''; }
+// Browser Close / Refresh Handler
+window.addEventListener('beforeunload', () => {
+  if (isMultiplayer && currentRoomId) {
+     socket.emit('leave_room', { roomId: currentRoomId });
+  }
 });
