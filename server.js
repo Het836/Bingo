@@ -1,7 +1,7 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const path = require('path');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
@@ -9,159 +9,117 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname)));
 
-// --- GAME STATE STORAGE ---
-// rooms[roomId] = { players: [{id, username}], turnIndex: 0 }
-const rooms = {}; 
+// Game State: rooms[roomId] = { players: [], turnIndex, startTurnIndex, gameState }
+const rooms = {};
 
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("Connected:", socket.id);
 
-    // 1. Create Room
-    socket.on('create_room', (username) => {
-        const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        socket.join(roomId);
-        
-        // Initialize Room State
-        rooms[roomId] = {
-            players: [{ id: socket.id, username: username, isReady: false }],
-            turnIndex: 0, // First player starts
-            gameState: 'waiting'
-        };
+  socket.on("create_room", (username) => {
+    const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    socket.join(roomId);
 
-        socket.emit('room_created', roomId);
-        // Update player count/info immediately for the creator
-        io.to(roomId).emit('update_players', rooms[roomId].players);
-        io.to(roomId).emit('update_turn', rooms[roomId].players[0].username);
+    rooms[roomId] = {
+      players: [{ id: socket.id, username, isReady: false }],
+      turnIndex: 0,
+      startTurnIndex: 0, // Tracks who starts the match
+      gameState: "waiting",
+      winners: [],
+      winTimer: null,
+    };
+
+    socket.emit("room_created", roomId);
+    io.to(roomId).emit("update_players", rooms[roomId].players);
+    io.to(roomId).emit("update_turn", rooms[roomId].players[0].username);
+  });
+
+  socket.on("join_room", ({ username, roomId }) => {
+    const room = io.sockets.adapter.rooms.get(roomId);
+    if (room && rooms[roomId]) {
+      socket.join(roomId);
+      rooms[roomId].players.push({ id: socket.id, username, isReady: false });
+
+      io.to(roomId).emit("update_players", rooms[roomId].players);
+      const currentTurnUser =
+        rooms[roomId].players[rooms[roomId].turnIndex].username;
+      io.to(roomId).emit("update_turn", currentTurnUser);
+    } else {
+      socket.emit("error_message", "Room not found!");
+    }
+  });
+
+  socket.on("click_number", ({ roomId, number }) => {
+    const room = rooms[roomId];
+    if (!room || room.gameState !== "playing") return;
+
+    const currentPlayer = room.players[room.turnIndex];
+    if (socket.id !== currentPlayer.id) return;
+
+    // Advance turn (Round Robin)
+    room.turnIndex = (room.turnIndex + 1) % room.players.length;
+    const nextPlayer = room.players[room.turnIndex];
+
+    io.to(roomId).emit("number_marked", {
+      number,
+      nextTurnUser: nextPlayer.username,
     });
+  });
 
-    // 2. Join Room
-    socket.on('join_room', (data) => {
-        const { username, roomId } = data;
-        const room = io.sockets.adapter.rooms.get(roomId);
+  socket.on("bingo_win", ({ roomId, username }) => {
+    const room = rooms[roomId];
+    if (!room) {
+      return;
+    }
+    if (!room.winners.includes(username)) {
+      room.winners.push(username);
+    }
+    if (!room.winTimer) {
+      room.winTimer = setTimeout(() => {
+        io.to(roomId).emit("game_over", { winnerList: room.winners });
 
-        if (room && rooms[roomId]) {
-            socket.join(roomId);
-            
-            // Add player to the list
-            rooms[roomId].players.push({ id: socket.id, username: username, isReady: false });
+        room.winners = [];
+        room.winTimer = null;
+      }, 500);
+    }
+  });
 
-            console.log(`${username} joined ${roomId}`);
+  socket.on("reset_game", (roomId) => {
+    const room = rooms[roomId];
+    if (room) {
+      room.gameState = "waiting";
+      // Rotate starter for the next game (Fair Play)
+      room.startTurnIndex = (room.startTurnIndex + 1) % room.players.length;
+      room.turnIndex = room.startTurnIndex;
 
-            // Notify everyone of new player list & count
-            io.to(roomId).emit('update_players', rooms[roomId].players);
-            
-            // Send current turn info to the new guy
-            const currentTurnUser = rooms[roomId].players[rooms[roomId].turnIndex].username;
-            io.to(roomId).emit('update_turn', currentTurnUser);
+      room.players.forEach((p) => (p.isReady = false));
+      const nextStarterName = room.players[room.startTurnIndex].username;
 
-        } else {
-            socket.emit('error_message', 'Room not found!');
-        }
-    });
+      io.to(roomId).emit("game_reset", { startTurn: nextStarterName });
+    } else {
+      socket.emit("error_message", "Room invalid.");
+    }
+  });
 
-    // 3. Handle Turns & Clicking
-    socket.on('click_number', (data) => {
-        const { roomId, number } = data;
-        const roomState = rooms[roomId];
-        
-        if (!roomState) return;
-        
-        if(rooms[roomId].gameState != 'playing') return;
+  socket.on("player_ready", (roomId) => {
+    const room = rooms[roomId];
+    if (room) {
+      const player = room.players.find((p) => p.id === socket.id);
+      if (player) player.isReady = true;
 
-        // Validation: Is it actually this person's turn?
-        const currentPlayer = roomState.players[roomState.turnIndex];
-        if (socket.id !== currentPlayer.id) {
-            return; // Ignore clicks if it's not their turn
-        }
+      // Check if ALL players are ready
+      if (room.players.every((p) => p.isReady) && room.players.length > 1) {
+        room.gameState = "playing";
+        room.turnIndex = room.startTurnIndex; // Respect the turn rotation
+        const firstPlayer = room.players[room.turnIndex].username;
+        io.to(roomId).emit("game_started", { startTurn: firstPlayer });
+      }
+    }
+  });
 
-        // 1. Advance Turn Logic (Round Robin)
-        roomState.turnIndex = (roomState.turnIndex + 1) % roomState.players.length;
-        const nextPlayer = roomState.players[roomState.turnIndex];
-
-        // 2. Broadcast Move AND Next Turn
-        io.to(roomId).emit('number_marked', {
-            number: number,
-            nextTurnUser: nextPlayer.username
-        });
-    });
-
-    // 4. Handle Winning
-    socket.on('bingo_win', (data) => {
-        const { roomId, username } = data;
-        // Broadcast "Game Over" to everyone
-        io.to(roomId).emit('game_over', { winner: username });
-    });
-
-    // ... other events ...
-
-    // 5. Handle Game Reset (Rematch)
-    socket.on('reset_game', (roomId) => {
-        // Debug Log: Check if server hears the click
-        console.log(`Reset requested for room: ${roomId}`);
-
-        const roomState = rooms[roomId];
-
-        if (roomState) {
-            // 1. Reset Game State to WAITING (Critical!)
-            roomState.gameState = 'waiting';
-            rooms[roomId].turnIndex = 0;
-
-            // 2. Mark all player as Not ready
-            roomState.players.forEach(p => p.isReady = false);
-
-            const firstPlayer = rooms[roomId].players[0].username;
-
-            // 3. tell client to reset 
-            io.to(roomId).emit('game_reset', { startTurn: firstPlayer });
-        } else {
-            // NEW: Tell client the room is dead
-            socket.emit('error_message', 'Room invalid or expired (Server restarted). Please reload page.');
-        }
-    });
-
-    // Handle player ready
-    socket.on('player_ready', (roomId) => {
-        // Step A: Get the specific room object using the ID
-        const roomState = rooms[roomId];
-        // Safety check: Does the room exist?
-        if(roomState){
-            // Step B: Find the specific player who clicked the button
-            // We search the 'players' array for the one matching 'socket.id'
-            const player = roomState.players.find(p => p.id === socket.id);
-
-            // If found, mark ONLY that player as ready
-            if(player){
-                player.isReady = true;
-            }
-
-            // Step C: Check if EVERYONE in that room is ready
-            // .every() returns true only if ALL items match the condition
-            const allReady = roomState.players.every(p => p.isReady);
-
-            // Step D: Start Game if everyone is ready (and enough players exist)
-            if(allReady && roomState.players.length>1){
-                roomState.gameState = 'playing' // Unlock the server side
-
-                // Reset turns to 0 (start from beginning)
-                roomState.turnIndex = 0;
-                const firstPlayer = roomState.players[0].username;
-
-                // Tell everyone: "GO!"
-                io.to(roomId).emit('game_started', {startTurn: firstPlayer});
-            }
-        }
-    })
-
-    // ... disconnect event ...
-
-    socket.on('disconnect', () => {
-        // Cleanup logic would go here (removing player from array)
-        // For now, we keep it simple.
-        console.log('User disconnected:', socket.id);
-    });
+  socket.on("disconnect", () => console.log("Disconnected:", socket.id));
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+server.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`),
+);

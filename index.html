@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -40,9 +40,11 @@
 
       <div id="gameArea" class="view hidden">
         <div class="room-info">
-          <button id="btnGameBack">Exit</button>
-          <div class="info-text">
+          <div class="room-func">
+            <button id="btnGameBack">Exit</button>
             <span id="displayRoomID">Room: ---</span>
+          </div>
+          <div class="info-text">
             <span id="turnIndicator">Your Turn</span>
             <span id="playerCount">Players: 1</span>
           </div>
@@ -50,31 +52,31 @@
 
         <div class="game">
           <div class="gameContainer">
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
-            <div class="box"><span class="boxtext"></span></div>
+            <div class="box"><span class="boxtext">1</span></div>
+            <div class="box"><span class="boxtext">2</span></div>
+            <div class="box"><span class="boxtext">3</span></div>
+            <div class="box"><span class="boxtext">4</span></div>
+            <div class="box"><span class="boxtext">5</span></div>
+            <div class="box"><span class="boxtext">6</span></div>
+            <div class="box"><span class="boxtext">7</span></div>
+            <div class="box"><span class="boxtext">8</span></div>
+            <div class="box"><span class="boxtext">9</span></div>
+            <div class="box"><span class="boxtext">10</span></div>
+            <div class="box"><span class="boxtext">11</span></div>
+            <div class="box"><span class="boxtext">12</span></div>
+            <div class="box"><span class="boxtext">13</span></div>
+            <div class="box"><span class="boxtext">14</span></div>
+            <div class="box"><span class="boxtext">15</span></div>
+            <div class="box"><span class="boxtext">16</span></div>
+            <div class="box"><span class="boxtext">17</span></div>
+            <div class="box"><span class="boxtext">18</span></div>
+            <div class="box"><span class="boxtext">19</span></div>
+            <div class="box"><span class="boxtext">20</span></div>
+            <div class="box"><span class="boxtext">21</span></div>
+            <div class="box"><span class="boxtext">22</span></div>
+            <div class="box"><span class="boxtext">23</span></div>
+            <div class="box"><span class="boxtext">24</span></div>
+            <div class="box"><span class="boxtext">25</span></div>
           </div>
 
           <div class="gameInfo">
@@ -88,10 +90,8 @@
               </ul>
             </div>
             <div class="bingoTracker">
-              <span class="letter">B</span>
-              <span class="letter">I</span>
-              <span class="letter">N</span>
-              <span class="letter">G</span>
+              <span class="letter">B</span><span class="letter">I</span>
+              <span class="letter">N</span><span class="letter">G</span>
               <span class="letter">O</span>
             </div>
             <div class="gameFunc">
@@ -121,6 +121,17 @@
             </button>
           </div>
         </div>
+
+        <div id="tieModal" class="modal hidden">
+          <div class="modal-content" style="border-color: #f1ff52">
+            <h2 style="color: #f1ff52">😑 It's a draw</h2>
+            <p id="tieNameText">Opponent Won!</p>
+            <button id="closeTieModal" style="background-color: #f1ff52">
+              Close
+            </button>
+          </div>
+        </div>
+        <div id="noneModal" class="modal hidden"></div>
       </div>
     </section>
 
