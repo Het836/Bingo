@@ -126,8 +126,10 @@ socket.on("number_marked", ({ number, nextTurnUser }) => {
   updateTurnUI(nextTurnUser);
 });
 
-socket.on("game_reset", ({ startTurn }) => {
-  alert("Host has restarted the game!");
+socket.on("game_reset", ({ startTurn, initiatorId }) => {
+  if(initiatorId!=socket.id){
+    alert("Host has restarted the game!");
+  }
   performSoftReset();
   updateTurnUI(startTurn);
 });

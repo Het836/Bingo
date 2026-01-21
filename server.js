@@ -105,7 +105,7 @@ io.on('connection', (socket) => {
       
       if(room.players[room.startTurnIndex]){
           const nextStarterName = room.players[room.startTurnIndex].username;
-          io.to(roomId).emit('game_reset', { startTurn: nextStarterName });
+          io.to(roomId).emit('game_reset', { startTurn: nextStarterName, initiatorId: socket.id});
       }
     }
   });
