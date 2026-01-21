@@ -336,6 +336,8 @@ btns.gameBack.addEventListener("click", () => {
 // Game Board Interactions
 boxes.forEach((box) => {
   box.addEventListener("click", () => {
+    const clickedNumber = box.innerText.trim();
+    
     if (!isLocked || gameEnded || box.classList.contains("marked")) return;
 
     if (isMultiplayer) {
