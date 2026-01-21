@@ -40,7 +40,7 @@ let boxtexts = document.querySelectorAll(".boxtext");
 let boxes = document.querySelectorAll(".box");
 let letters = document.querySelectorAll(".letter");
 let random = document.getElementById("random");
-let manual = document.getElementById("manual");
+let enter = document.getElementById("enter");
 let reset = document.getElementById("reset");
 
 let displayRoomID = document.getElementById("displayRoomID");
@@ -135,8 +135,8 @@ socket.on("game_reset", ({ startTurn }) => {
 socket.on("game_started", ({ startTurn }) => {
   isGameActive = true;
   playSound("start");
-  manual.innerText = "Game On!";
-  manual.style.backgroundColor = "var(--marked-color)";
+  enter.innerText = "Game On!";
+  enter.style.backgroundColor = "var(--marked-color)";
   updateTurnUI(startTurn);
 });
 
@@ -263,8 +263,8 @@ function performSoftReset() {
   tieModel.classList.add("hidden");
   noneModal.classList.add("hidden");
 
-  manual.innerText = "Enter";
-  manual.style.backgroundColor = "var(--primary-blue)";
+  enter.innerText = "Enter";
+  enter.style.backgroundColor = "var(--primary-blue)";
   arr = Array.from({ length: 25 }, (_, i) => i + 1);
 }
 
@@ -337,7 +337,7 @@ btns.gameBack.addEventListener("click", () => {
 boxes.forEach((box) => {
   box.addEventListener("click", () => {
     const clickedNumber = box.innerText.trim();
-    
+
     if (!isLocked || gameEnded || box.classList.contains("marked")) return;
 
     if (isMultiplayer) {
@@ -381,16 +381,16 @@ random.addEventListener("click", () => {
   boxtexts.forEach((span, i) => (span.innerText = arr[i]));
 });
 
-manual.addEventListener("click", () => {
+enter.addEventListener("click", () => {
   if (boxtexts[0].innerText === "") return alert("Fill boxes first!");
   isLocked = true;
   if (isMultiplayer) {
-    manual.innerText = "Getting Start...";
-    manual.style.backgroundColor = "grey";
+    enter.innerText = "Getting Start...";
+    enter.style.backgroundColor = "grey";
     socket.emit("player_ready", currentRoomId);
   } else {
-    manual.innerText = "Game Started!";
-    manual.style.backgroundColor = "var(--marked-color)";
+    enter.innerText = "Game Started!";
+    enter.style.backgroundColor = "var(--marked-color)";
     isGameActive = true;
   }
 });
